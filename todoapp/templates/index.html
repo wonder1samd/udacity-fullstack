@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> Todo App</title>
+        <style>
+            .hidden{
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <form id="form">
+           <input type="text" name="description" />
+           <input type="submit" value="Create" />
+        </form>
+        <!-- not showing by default-->
+        <div id="error" class="hidden">Something Went Wrong!</div>
+        <ul id="todos">
+            <!--for every item inside a variable data, we can repeat this List item and have it print
+            the description attribute -->
+            {% for d in data%}
+            <li>{{ d.description }}</li>
+            {% endfor %}
+        </ul>
+    <script>
+        document.getElementById('form').onsubmit = function(e){
+            // prevent the default behavior 
+            e.preventDefault();
+            fetch('/todos/create',{
+                method: 'POST',
+                body: JSON.stringify({
+                    // send a body of information which includes the description that's come in from the form when users hit submit
+                    'description':document.getElementById('description').value,
+                }),
+                headers:{
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(function(response){
+                // parse out the response which will initially be a string as a JSON response
+                return response.json();
+            })
+            // manipulate the jsonResponse
+            .then(function(jsonResponse){
+                console.log(jsonResponse);
+                // create a new LI item and specifies its tag
+                const liItem = document.createElement('LI');
+                // specify the inner HTML of this LI tag as description that comes from the response
+                liItem.innerHTML = jsonResponse['description'];
+                // append a child LI item inside ul tag above
+                document.getElementById('todos').appendChild(liItem);
+                // make sure that error message does not display when it did succeed
+                document.getElementById('error').className = 'hidden';
+            })
+            //gets triggered only if something had gone wrong with our server
+            .catch(function(){
+                // make sure that the hidden class is no longer with the id error if something does go wrong
+                document.getElementById('error').className = '';
+            })
+        }
+    </script>
+    </body>
+</html>
